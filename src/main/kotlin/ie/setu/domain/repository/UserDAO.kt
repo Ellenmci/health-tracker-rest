@@ -10,6 +10,9 @@ import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
 
+/**
+ * Manages the database transactions and returns the results of the transactions
+ */
 class UserDAO {
 
     fun getAll(): ArrayList<User> {
@@ -43,7 +46,10 @@ class UserDAO {
             Users.deleteWhere{ Users.id eq id }
         }
     }
-
+    /**
+     * Adds a [user] to the Users table.
+     * @return the id of the user following the add.
+     */
     fun save(user: User) : Int?{
         return transaction {
             Users.insert {
