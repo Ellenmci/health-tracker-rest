@@ -1,6 +1,7 @@
 package ie.setu.config
 
-import ie.setu.controllers.HealthTrackerController
+import ie.setu.controllers.ActivityController
+import ie.setu.controllers.UserController
 import ie.setu.utils.jsonObjectMapper
 import io.javalin.Javalin
 import io.javalin.json.JavalinJackson
@@ -24,27 +25,24 @@ class JavalinConfig {
     }
 
     private fun registerRoutes(app: Javalin) {
-        //---------------
-        // User API paths
-        //---------------
-        app.get("/api/users", HealthTrackerController::getAllUsers)
-        app.get("/api/users/{user-id}", HealthTrackerController::getUserByUserId)
-        app.post("/api/users", HealthTrackerController::addUser)
-        app.delete("/api/users/{user-id}", HealthTrackerController::deleteUser)
-        app.patch("/api/users/{user-id}", HealthTrackerController::updateUser)
-        app.get("/api/users/email/{email}", HealthTrackerController::getUserByEmail)
-        app.get("/api/users/{user-id}/activities", HealthTrackerController::getActivitiesByUserId)
-        app.delete("/api/users/{user-id}/activities", HealthTrackerController::deleteActivityByUserId)
+        val userController = UserController()
+        val activityController = ActivityController()
 
-        //---------------------
-        // Activities API paths
-        //---------------------
-        app.get("/api/activities", HealthTrackerController::getAllActivities)
-        app.post("/api/activities", HealthTrackerController::addActivity)
-        app.get("/api/users/{user-id}/activities", HealthTrackerController::getActivitiesByUserId)
-        app.delete("/api/activities/{activity-id}", HealthTrackerController::deleteActivityByActivityId)
-        app.patch("/api/activities/{activity-id}", HealthTrackerController::updateActivity)
+// USER routes
+        app.get("/api/users", userController::getAllUsers)
+        app.get("/api/users/{user-id}", userController::getUserByUserId)
+        app.post("/api/users", userController::addUser)
+        app.delete("/api/users/{user-id}", userController::deleteUser)
+        app.patch("/api/users/{user-id}", userController::updateUser)
+        app.get("/api/users/email/{email}", userController::getUserByEmail)
 
+// ACTIVITY routes
+        app.get("/api/activities", activityController::getAllActivities)
+        app.post("/api/activities", activityController::addActivity)
+        app.get("/api/users/{user-id}/activities", activityController::getActivitiesByUserId)
+        app.delete("/api/users/{user-id}/activities", activityController::deleteActivityByUserId)
+        app.delete("/api/activities/{activity-id}", activityController::deleteActivityByActivityId)
+        app.patch("/api/activities/{activity-id}", activityController::updateActivity)
     }
 
     private fun getRemoteAssignedPort(): Int {
