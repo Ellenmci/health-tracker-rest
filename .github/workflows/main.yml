@@ -59,7 +59,7 @@ jobs:
         oc login $OPENSHIFT_API_URL --token=$OPENSHIFT_TOKEN --insecure-skip-tls-verify=true
     - name: Set project to msc-agile-sem1-25-emcintyre
       run: |
-        oc msc-agile-sem1-25-emcintyre
+        oc  project msc-agile-sem1-25-emcintyre
     - name: Build and deploy the app to OpenShift
       run: |
         # OpenShift setup uses Source-to-Image (S2I) 
