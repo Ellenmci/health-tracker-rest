@@ -61,4 +61,6 @@ class UserDAO {
             }
         }
     }
+    private val activityDAO = ActivityDAO()
+
 }
