@@ -43,6 +43,7 @@ class JavalinConfig {
         app.delete("/api/users/{user-id}/activities", activityController::deleteActivityByUserId)
         app.delete("/api/activities/{activity-id}", activityController::deleteActivityByActivityId)
         app.patch("/api/activities/{activity-id}", activityController::updateActivity)
+        app.get("/api/activities/{activity-id}", activityController::getActivitiesByActivityId)
     }
 
     private fun getRemoteAssignedPort(): Int {
@@ -50,11 +51,6 @@ class JavalinConfig {
         return if (remotePort != null) {
             Integer.parseInt(remotePort)
         } else 8080
-    }
-
-    fun getJavalinService(): Javalin {
-        registerRoutes(app)
-        return app
     }
 
 }
