@@ -20,42 +20,43 @@ class AddUserTest {
     private val verificationErrors = StringBuffer()
     private var acceptNextAlert = true
 
-    // -----------------------------
-    //  DATABASE SETUP (runs once)
-    // -----------------------------
+    // ---------------------------------------------------------
+    // RUN ONCE — CONNECT TO IN-MEMORY H2
+    // ---------------------------------------------------------
     @BeforeAll
     fun setupDatabase() {
         TestDatabaseConfig.connect()
     }
 
-    // -----------------------------
-    //  BEFORE EACH TEST
-    // -----------------------------
+    // ---------------------------------------------------------
+    // RUN BEFORE EACH TEST — RESET DB + START JETTY + START CHROME
+    // ---------------------------------------------------------
     @BeforeEach
     fun setUp() {
-        // Reset DB and seed test data
+        // Reset DB and seed data
         TestDatabaseConfig.reset()
         transaction {
             populateUserTable()
             populateActivityTable()
         }
 
-        // Start Javalin server
-        app = JavalinConfig().getJavalinService().start(0) // random free port
+        // Start Javalin on a random free port
+        app = JavalinConfig().getJavalinService().start(0)
 
-        // Configure Selenium (headless)
-        val options = ChromeOptions()
-        options.addArguments("--headless=new")
-        options.addArguments("--disable-gpu")
-        options.addArguments("--no-sandbox")
+        // Configure headless Chrome for CI
+        val options = ChromeOptions().apply {
+            addArguments("--headless=new")
+            addArguments("--no-sandbox")
+            addArguments("--disable-dev-shm-usage")
+        }
 
         driver = ChromeDriver(options)
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(60))
     }
 
-    // -----------------------------
-    //  TEST
-    // -----------------------------
+    // ---------------------------------------------------------
+    // THE TEST
+    // ---------------------------------------------------------
     @Test
     fun testAddUser() {
         val baseUrl = "http://localhost:${app.port()}"
@@ -63,7 +64,9 @@ class AddUserTest {
         driver.get(baseUrl)
         driver.findElement(By.linkText("More Details...")).click()
 
-        driver.findElement(By.xpath("//main[@id='main-vue']/div/div/div/div/div/div/div/div[2]/button")).click()
+        driver.findElement(
+            By.xpath("//main[@id='main-vue']/div/div/div/div/div/div/div/div[2]/button")
+        ).click()
 
         driver.findElement(By.name("name")).apply {
             click()
@@ -77,14 +80,16 @@ class AddUserTest {
             sendKeys("lisa@simpson.com")
         }
 
-        driver.findElement(By.xpath("//main[@id='main-vue']/div/div/div/div/div/div[2]/button")).click()
+        driver.findElement(
+            By.xpath("//main[@id='main-vue']/div/div/div/div/div/div[2]/button")
+        ).click()
 
         driver.findElement(By.linkText("Lisa Simpson (lisa@simpson.com)")).click()
     }
 
-    // -----------------------------
-    //  AFTER EACH TEST
-    // -----------------------------
+    // ---------------------------------------------------------
+    // CLEANUP AFTER EACH TEST
+    // ---------------------------------------------------------
     @AfterEach
     fun tearDown() {
         driver.quit()
@@ -96,9 +101,9 @@ class AddUserTest {
         }
     }
 
-    // -----------------------------
-    //  HELPERS
-    // -----------------------------
+    // ---------------------------------------------------------
+    // HELPERS
+    // ---------------------------------------------------------
     private fun isElementPresent(by: By): Boolean =
         try {
             driver.findElement(by)
