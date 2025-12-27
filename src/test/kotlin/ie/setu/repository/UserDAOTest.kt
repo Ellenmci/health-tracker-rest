@@ -3,8 +3,9 @@ package ie.setu.repository
 import ie.setu.domain.User
 import ie.setu.domain.db.Users
 import ie.setu.domain.repository.UserDAO
-import ie.setu.helpers.users
 import ie.setu.helpers.nonExistingEmail
+import ie.setu.helpers.populateUserTable
+import ie.setu.helpers.users
 import junit.framework.TestCase.assertEquals
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
@@ -32,45 +33,6 @@ class UserDAOTest {
 
     @Nested
     inner class ReadUsers {
-
-        @Test
-        fun `get all users over empty table returns none`() {
-            transaction {
-
-                //Arrange - create and setup userDAO object
-                SchemaUtils.create(Users)
-                val userDAO = UserDAO()
-
-                //Act & Assert
-                assertEquals(0, userDAO.getAll().size)
-            }
-        }
-
-        @Test
-        fun `get user by email that doesn't exist, results in no user returned`() {
-            transaction {
-
-                //Arrange - create and populate table with three users
-                val userDAO = populateUserTable()
-
-                //Act & Assert
-                assertEquals(null, userDAO.findByEmail(nonExistingEmail))
-            }
-        }
-
-        @Test
-        fun `get user by email that exists, results in correct user returned`() {
-            transaction {
-
-                //Arrange - create and populate table with three users
-                val userDAO = populateUserTable()
-
-                //Act & Assert
-                assertEquals(user2, userDAO.findByEmail(user2.email))
-            }
-        }
-
-
         @Test
         fun `getting all users from a populated table returns all rows`() {
             transaction {
@@ -110,6 +72,44 @@ class UserDAOTest {
             }
 
         }
+
+        @Test
+        fun `get all users over empty table returns none`() {
+            transaction {
+
+                //Arrange - create and setup userDAO object
+                SchemaUtils.create(Users)
+                val userDAO = UserDAO()
+
+                //Act & Assert
+                assertEquals(0, userDAO.getAll().size)
+            }
+        }
+
+        @Test
+        fun `get user by email that doesn't exist, results in no user returned`() {
+            transaction {
+
+                //Arrange - create and populate table with three users
+                val userDAO = populateUserTable()
+
+                //Act & Assert
+                assertEquals(null, userDAO.findByEmail(nonExistingEmail))
+            }
+        }
+
+        @Test
+        fun `get user by email that exists, results in correct user returned`() {
+            transaction {
+
+                //Arrange - create and populate table with three users
+                val userDAO = populateUserTable()
+
+                //Act & Assert
+                assertEquals(user2, userDAO.findByEmail(user2.email))
+            }
+        }
+
     }
 
     @Nested
@@ -126,37 +126,6 @@ class UserDAOTest {
                 assertEquals(user1, userDAO.findById(user1.id))
                 assertEquals(user2, userDAO.findById(user2.id))
                 assertEquals(user3, userDAO.findById(user3.id))
-            }
-        }
-    }
-
-    @Nested
-    inner class DeleteUsers {
-        @Test
-        fun `deleting a non-existant user in table results in no deletion`() {
-            transaction {
-
-                //Arrange - create and populate table with three users
-                val userDAO = populateUserTable()
-
-                //Act & Assert
-                assertEquals(3, userDAO.getAll().size)
-                userDAO.delete(4)
-                assertEquals(3, userDAO.getAll().size)
-            }
-        }
-
-        @Test
-        fun `deleting an existing user in table results in record being deleted`() {
-            transaction {
-
-                //Arrange - create and populate table with three users
-                val userDAO = populateUserTable()
-
-                //Act & Assert
-                assertEquals(3, userDAO.getAll().size)
-                userDAO.delete(user3.id)
-                assertEquals(2, userDAO.getAll().size)
             }
         }
     }
@@ -195,12 +164,35 @@ class UserDAOTest {
     }
 
 
-    internal fun populateUserTable(): UserDAO{
-        SchemaUtils.create(Users)
-        val userDAO = UserDAO()
-        userDAO.save(user1)
-        userDAO.save(user2)
-        userDAO.save(user3)
-        return userDAO
+    @Nested
+    inner class DeleteUsers {
+        @Test
+        fun `deleting a non-existant user in table results in no deletion`() {
+            transaction {
+
+                //Arrange - create and populate table with three users
+                val userDAO = populateUserTable()
+
+                //Act & Assert
+                assertEquals(3, userDAO.getAll().size)
+                userDAO.delete(4)
+                assertEquals(3, userDAO.getAll().size)
+            }
+        }
+
+        @Test
+        fun `deleting an existing user in table results in record being deleted`() {
+            transaction {
+
+                //Arrange - create and populate table with three users
+                val userDAO = populateUserTable()
+
+                //Act & Assert
+                assertEquals(3, userDAO.getAll().size)
+                userDAO.delete(user3.id)
+                assertEquals(2, userDAO.getAll().size)
+            }
+        }
     }
+
 }
