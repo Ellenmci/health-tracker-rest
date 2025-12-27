@@ -5,12 +5,16 @@ import ie.setu.controllers.UserController
 import ie.setu.utils.jsonObjectMapper
 import io.javalin.Javalin
 import io.javalin.json.JavalinJackson
+import io.javalin.vue.VueComponent
 
 class JavalinConfig {
 
     val app = Javalin.create(
         { config ->
             config.jsonMapper(JavalinJackson(jsonObjectMapper()))
+            config.staticFiles.enableWebjars()
+            config.vue.vueInstanceNameInJs = "app"
+
         }
     ).apply {
         exception(Exception::class.java) { e, ctx -> e.printStackTrace() }
@@ -27,6 +31,13 @@ class JavalinConfig {
     private fun registerRoutes(app: Javalin) {
         val userController = UserController()
         val activityController = ActivityController()
+
+//Vue routes
+        app.get("/", VueComponent("<home-page></home-page>"))
+        app.get("/users", VueComponent("<user-overview></user-overview>"))
+        app.get("/users/{user-id}", VueComponent("<user-profile></user-profile>"))
+        app.get("/users/{user-id}/activities", VueComponent("<user-activity-overview></user-activity-overview>"))
+
 
 // USER routes
         app.get("/api/users", userController::getAllUsers)
@@ -51,6 +62,10 @@ class JavalinConfig {
         return if (remotePort != null) {
             Integer.parseInt(remotePort)
         } else 8080
+    }
+    fun getJavalinService(): Javalin {
+        registerRoutes(app)
+        return app
     }
 
 }
