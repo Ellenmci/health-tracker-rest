@@ -2,6 +2,8 @@ package ie.setu.config
 
 import ie.setu.controllers.ActivityController
 import ie.setu.controllers.HeartRateController
+import ie.setu.controllers.SleepController
+import ie.setu.controllers.StepController
 import ie.setu.controllers.UserController
 import ie.setu.utils.jsonObjectMapper
 import io.javalin.Javalin
@@ -33,6 +35,8 @@ class JavalinConfig {
         val userController = UserController()
         val activityController = ActivityController()
         val heartRateController = HeartRateController()
+        val stepController = StepController()
+        val sleepController = SleepController()
 
 //Vue routes
         app.get("/", VueComponent("<home-page></home-page>"))
@@ -44,6 +48,31 @@ class JavalinConfig {
         app.post("/api/users/{user-id}/heartrates", heartRateController::addHeartRate)
         app.get("/api/users/{user-id}/heartrates", heartRateController::getHeartRatesByUserId)
         app.get("/api/users/{user-id}/heartrates/summary", heartRateController::getHeartRateSummary)
+
+//Step routes
+// user-scoped step routes
+        app.post("/api/users/{user-id}/steps", stepController::addSteps)
+        app.get("/api/users/{user-id}/steps", stepController::getStepsByUserId)
+        app.get("/api/users/{user-id}/steps/summary", stepController::getStepSummary)
+        app.delete("/api/users/{user-id}/steps", stepController::deleteStepsByUserId)
+// global step routes (by step id)
+        app.get("/api/steps/{step-id}", stepController::getStepById)
+        app.patch("/api/steps/{step-id}", stepController::updateStep)
+        app.delete("/api/steps/{step-id}", stepController::deleteStepById)
+
+
+//sleep routes
+// user-scoped
+        app.post("/api/users/{user-id}/sleep", sleepController::addSleep)
+        app.get("/api/users/{user-id}/sleep", sleepController::getSleepByUserId)
+        app.get("/api/users/{user-id}/sleep/summary", sleepController::getSleepSummary)
+        app.delete("/api/users/{user-id}/sleep", sleepController::deleteSleepByUserId)
+
+// global CRUD
+        app.get("/api/sleep/{sleep-id}", sleepController::getSleepById)
+        app.patch("/api/sleep/{sleep-id}", sleepController::updateSleep)
+        app.delete("/api/sleep/{sleep-id}", sleepController::deleteSleepById)
+
 
 // USER routes
         app.get("/api/users", userController::getAllUsers)
