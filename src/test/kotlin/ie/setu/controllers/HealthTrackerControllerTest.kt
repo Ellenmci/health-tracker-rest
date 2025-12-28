@@ -1,6 +1,7 @@
 package ie.setu.controllers
 
 import ie.setu.domain.Activity
+import ie.setu.domain.HeartRate
 import ie.setu.domain.User
 import ie.setu.domain.db.Activities
 import ie.setu.domain.db.Users
@@ -460,6 +461,127 @@ class HealthTrackerTest {
             assertEquals(404, retrieveActivityByActivityId(addedActivity3.id).status)
         }
     }
+    @Nested
+    inner class HeartRateTests {
+
+        @Test
+        fun `adding a heart rate reading returns 201 response`() {
+            val addedUser: User = jsonToObject(addUser(validName, validEmail).body.toString())
+
+            val response = Unirest.post("$origin/api/users/${addedUser.id}/heartrates")
+                .body("""
+                {
+                    "id": 0,
+                    "userId": ${addedUser.id},
+                    "bpm": 72,
+                    "measuredAt": "2025-01-01T10:00:00.000Z"
+                }
+            """.trimIndent())
+                .asJson()
+
+            assertEquals(201, response.status)
+            deleteUser(addedUser.id)
+        }
+
+        @Test
+        fun `retrieving heart rates by user id returns 200 when data exists`() {
+            val addedUser: User = jsonToObject(addUser(validName, validEmail).body.toString())
+
+            listOf(70, 85).forEach { bpm ->
+                Unirest.post("$origin/api/users/${addedUser.id}/heartrates")
+                    .body("""
+                    {
+                        "id": 0,
+                        "userId": ${addedUser.id},
+                        "bpm": $bpm,
+                        "measuredAt": "2025-01-01T10:00:00.000Z"
+                    }
+                """.trimIndent())
+                    .asJson()
+            }
+
+            val response = Unirest.get("$origin/api/users/${addedUser.id}/heartrates").asJson()
+            assertEquals(200, response.status)
+            val readings = jsonNodeToObject<Array<HeartRate>>(response)
+            assertEquals(2, readings.size)
+
+            deleteUser(addedUser.id)
+        }
+
+        @Test
+        fun `retrieving heart rates by user id returns 404 when no data exists`() {
+            val addedUser: User = jsonToObject(addUser(validName, validEmail).body.toString())
+
+            val response = Unirest.get("$origin/api/users/${addedUser.id}/heartrates").asJson()
+            assertEquals(404, response.status)
+
+            deleteUser(addedUser.id)
+        }
+
+        @Test
+        fun `heart rate summary returns correct statistics`() {
+            val addedUser: User = jsonToObject(addUser(validName, validEmail).body.toString())
+
+            listOf(60, 80, 100).forEach { bpm ->
+                Unirest.post("$origin/api/users/${addedUser.id}/heartrates")
+                    .body("""
+                    {
+                        "id": 0,
+                        "userId": ${addedUser.id},
+                        "bpm": $bpm,
+                        "measuredAt": "2025-01-01T10:00:00.000Z"
+                    }
+                """.trimIndent())
+                    .asJson()
+            }
+
+            val response = Unirest.get("$origin/api/users/${addedUser.id}/heartrates/summary").asJson()
+            assertEquals(200, response.status)
+            val json = response.body.`object`
+
+            assertEquals(80.0, json.getDouble("averageBpm"))
+            assertEquals(60, json.getInt("minBpm"))
+            assertEquals(100, json.getInt("maxBpm"))
+            assertEquals(3, json.getInt("count"))
+
+            deleteUser(addedUser.id)
+        }
+
+        @Test
+        fun `heart rate summary returns 404 when no readings exist`() {
+            val addedUser: User = jsonToObject(addUser(validName, validEmail).body.toString())
+
+            val response = Unirest.get("$origin/api/users/${addedUser.id}/heartrates/summary").asJson()
+            assertEquals(404, response.status)
+
+            deleteUser(addedUser.id)
+        }
+    }
+
+    //helper function to add heartrate readings
+    private fun addHeartRate(userId: Int, bpm: Int): HttpResponse<JsonNode> {
+        return Unirest.post("$origin/api/users/$userId/heartrates")
+            .body("""
+            {
+                "id": 0,
+                "userId": $userId,
+                "bpm": $bpm,
+                "measuredAt": "2025-01-01T10:00:00.000Z"
+            }
+        """.trimIndent())
+            .asJson()
+    }
+    // helper function to get all heart rate readings for a user
+    private fun retrieveHeartRatesByUserId(userId: Int): HttpResponse<JsonNode> {
+        return Unirest.get("$origin/api/users/$userId/heartrates").asJson()
+    }
+
+    // helper function to get heart rate summary for a user
+    private fun retrieveHeartRateSummary(userId: Int): HttpResponse<JsonNode> {
+        return Unirest.get("$origin/api/users/$userId/heartrates/summary").asJson()
+    }
+
+
 
     //helper function to add a test user to the database
     private fun addUser (name: String, email: String): HttpResponse<JsonNode> {
