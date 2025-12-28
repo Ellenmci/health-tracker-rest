@@ -37,5 +37,5 @@ Each feature includes:
 
   <img width="1676" height="578" alt="image" src="https://github.com/user-attachments/assets/9bb911ec-6be5-4683-961c-ceb512b15acf" />
   <img width="1883" height="760" alt="image" src="https://github.com/user-attachments/assets/1784bef6-77af-4dd8-b6ef-fb8ebab0ff26" />
-
+ Video recording https://youtu.be/z9Myb-aRFIU
 I was hoping to have more screenshots of went it was working, but i lost them when i was rebooting my laptop.
