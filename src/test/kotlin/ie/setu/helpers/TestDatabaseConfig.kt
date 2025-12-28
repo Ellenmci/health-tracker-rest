@@ -5,6 +5,8 @@ import ie.setu.domain.db.Activities
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
+import ie.setu.domain.db.HeartRates
+
 
 object TestDatabaseConfig {
 
@@ -21,15 +23,15 @@ object TestDatabaseConfig {
             initialised = true
 
             transaction {
-                SchemaUtils.create(Users, Activities)
+                SchemaUtils.create(Users, Activities, HeartRates)
             }
         }
     }
 
     fun reset() {
         transaction {
-            SchemaUtils.drop(Users, Activities)
-            SchemaUtils.create(Users, Activities)
+            SchemaUtils.drop(Users, Activities, HeartRates)
+            SchemaUtils.create(Users, Activities, HeartRates)
         }
     }
 }

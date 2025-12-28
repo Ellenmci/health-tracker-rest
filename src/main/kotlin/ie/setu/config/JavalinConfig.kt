@@ -1,6 +1,7 @@
 package ie.setu.config
 
 import ie.setu.controllers.ActivityController
+import ie.setu.controllers.HeartRateController
 import ie.setu.controllers.UserController
 import ie.setu.utils.jsonObjectMapper
 import io.javalin.Javalin
@@ -31,6 +32,7 @@ class JavalinConfig {
     private fun registerRoutes(app: Javalin) {
         val userController = UserController()
         val activityController = ActivityController()
+        val heartRateController = HeartRateController()
 
 //Vue routes
         app.get("/", VueComponent("<home-page></home-page>"))
@@ -38,6 +40,10 @@ class JavalinConfig {
         app.get("/users/{user-id}", VueComponent("<user-profile></user-profile>"))
         app.get("/users/{user-id}/activities", VueComponent("<user-activity-overview></user-activity-overview>"))
 
+//HeartRate routes
+        app.post("/api/users/{user-id}/heartrates", heartRateController::addHeartRate)
+        app.get("/api/users/{user-id}/heartrates", heartRateController::getHeartRatesByUserId)
+        app.get("/api/users/{user-id}/heartrates/summary", heartRateController::getHeartRateSummary)
 
 // USER routes
         app.get("/api/users", userController::getAllUsers)
