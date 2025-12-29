@@ -1,10 +1,10 @@
-<template id="user-activity-overview">
+<template id="steps-summary">
   <app-layout>
 
     <div class="card bg-light mb-3">
       <div class="card-header">
         <div class="row">
-          <div class="col-6">Activities</div>
+          <div class="col-6">Steps</div>
           <div class="col" align="right">
             <button class="btn btn-info btn-simple btn-link" @click="hideForm = !hideForm">
               <i class="fa fa-plus"></i>
@@ -17,37 +17,37 @@
         <form>
           <div class="input-group mb-3">
             <div class="input-group-prepend">
-              <span class="input-group-text">Description</span>
+              <span class="input-group-text">Steps</span>
             </div>
-            <input type="text" class="form-control" v-model="formData.description" />
+            <input type="number" class="form-control" v-model="formData.steps" />
           </div>
 
           <div class="input-group mb-3">
             <div class="input-group-prepend">
-              <span class="input-group-text">Duration</span>
+              <span class="input-group-text">Date</span>
             </div>
-            <input type="number" class="form-control" v-model="formData.duration" />
+            <input type="text" class="form-control" v-model="formData.date" />
           </div>
         </form>
 
-        <button class="btn btn-info btn-simple btn-link" @click="addActivity">Add Activity</button>
+        <button class="btn btn-info btn-simple btn-link" @click="addSteps">Add Steps</button>
       </div>
     </div>
 
     <div class="list-group list-group-flush">
       <div class="list-group-item d-flex align-items-start"
-           v-for="(a,index) in activities" :key="index">
+           v-for="(s,index) in entries" :key="index">
 
         <div class="mr-auto p-2">
-          {{ a.description }} ({{ a.duration }} mins)
+          {{ s.date }} — {{ s.steps }} steps
         </div>
 
         <div class="p2">
-          <button class="btn btn-info btn-simple btn-link" @click="editActivity(a)">
+          <button class="btn btn-info btn-simple btn-link" @click="editSteps(s)">
             <i class="fa fa-pencil"></i>
           </button>
 
-          <button class="btn btn-info btn-simple btn-link" @click="deleteActivity(a.id, index)">
+          <button class="btn btn-info btn-simple btn-link" @click="deleteSteps(s.id, index)">
             <i class="fas fa-trash"></i>
           </button>
         </div>
@@ -59,10 +59,10 @@
 </template>
 
 <script>
-app.component("user-activity-overview", {
-  template: "#user-activity-overview",
+app.component("steps-summary", {
+  template: "#steps-summary",
   data: () => ({
-    activities: [],
+    entries: [],
     formData: [],
     hideForm: true,
     editingId: null
@@ -70,36 +70,35 @@ app.component("user-activity-overview", {
 
   created() {
     const id = this.$javalin.pathParams["user-id"];
-    axios.get(`/api/users/${id}/activities`)
-        .then(res => this.activities = res.data);
+    axios.get(`/api/users/${id}/steps`)
+        .then(res => this.entries = res.data);
   },
 
   methods: {
-    addActivity() {
+    addSteps() {
       const id = this.$javalin.pathParams["user-id"];
-      axios.post(`/api/users/${id}/activities`, {
-        description: this.formData.description,
-        duration: Number(this.formData.duration),
+      axios.post(`/api/users/${id}/steps`, {
+        steps: Number(this.formData.steps),
+        date: this.formData.date,
         userId: id
       })
           .then(res => {
-            this.activities.push(res.data);
+            this.entries.push(res.data);
             this.hideForm = true;
           });
     },
 
-    editActivity(a) {
-      this.editingId = a.id;
-      this.formData.description = a.description;
-      this.formData.duration = a.duration;
+    editSteps(s) {
+      this.editingId = s.id;
+      this.formData.steps = s.steps;
+      this.formData.date = s.date;
       this.hideForm = false;
     },
 
-    deleteActivity(id, index) {
-      axios.delete(`/api/activities/${id}`)
-          .then(() => this.activities.splice(index, 1));
+    deleteSteps(id, index) {
+      axios.delete(`/api/steps/${id}`)
+          .then(() => this.entries.splice(index, 1));
     }
   }
 });
 </script>
-
